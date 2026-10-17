@@ -1,0 +1,30 @@
+from pathlib import Path
+p = Path('/home/ubuntu/gravity-video-library/client/src/pages/AdminDashboard.tsx')
+s = p.read_text()
+s = s.replace('type Summary = { total: number; successful: number; failed: number; pending: number };\n', 'type Summary = { total: number; successful: number; failed: number; pending: number };\ntype Activity = { id: string; displayName: string; ipAddress: string; createdAt: string; userAgent?: string | null; kind: "attempt" | "session"; attempt?: Attempt; session?: Session };\n')
+needle = '  if (adminState === "checking") return'
+insert = '''  const activityRows: Activity[] = [
+    ...attempts.map((attempt, index) => ({ id: `attempt-${attempt.id ?? `${attempt.createdAt}-${index}`}`, displayName: attempt.displayName, ipAddress: attempt.ipAddress, createdAt: attempt.createdAt, userAgent: attempt.userAgent, kind: "attempt" as const, attempt })),
+    ...sessionHistory.map(session => ({ id: `session-${session.id}`, displayName: session.displayName, ipAddress: session.ipAddress, createdAt: session.endedAt ?? session.createdAt, userAgent: session.userAgent, kind: "session" as const, session })),
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  function activityLabel(activity: Activity) {
+    if (activity.kind === "attempt") return reasonLabel(activity.attempt!.reason);
+    return sessionStatusLabel(activity.session!).label;
+  }
+  function activityClass(activity: Activity) {
+    if (activity.kind === "attempt") return activity.attempt!.reason === "awaiting_approval" ? "text-amber-200" : activity.attempt!.successful ? "text-[#70e3d8]" : "text-red-200";
+    return sessionStatusLabel(activity.session!).className;
+  }
+
+'''
+s = s.replace(needle, insert + needle)
+start = '  <section className="mb-6 rounded-2xl border border-white/10 bg-[#0e1326] p-5"><div className="mb-4"><h2 className="font-bold">سجل حالات الجلسات</h2>'
+end = '  <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#0e1326]">'
+a = s.find(start)
+b = s.find(end, a)
+if a == -1 or b == -1:
+    raise SystemExit('session history section markers not found')
+s = s[:a] + s[b:]
+s = s.replace('<h2 className="font-bold">سجل محاولات الدخول</h2><p className="mt-1 text-xs text-[#737892]">{summary.total} سجلًا إجماليًا · الطلبات المعلقة منفصلة عن المرفوضة</p>', '<h2 className="font-bold">محاولات تسجيل الدخول ونشاط الجلسات</h2><p className="mt-1 text-xs text-[#737892]">{summary.total} محاولة دخول · ويظهر هنا أيضًا خروج المستخدم وإنهاء الجلسات</p>')
+s = s.replace('{attempts.length === 0 ? <p className="p-10 text-center text-sm text-[#8f93ac]">السجل فارغ.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-right text-sm"><thead className="bg-white/[0.035] text-xs text-[#8f93ac]"><tr><th className="px-5 py-3">الحالة</th><th className="px-5 py-3">الاسم</th><th className="px-5 py-3">عنوان الشبكة</th><th className="px-5 py-3">التاريخ</th><th className="px-5 py-3">المتصفح والجهاز</th><th className="px-5 py-3">إدارة</th></tr></thead><tbody className="divide-y divide-white/[0.06]">{attempts.map((attempt, index) => <tr key={attempt.id ?? `${attempt.createdAt}-${index}`}><td className="px-5 py-4"><span className={attempt.reason === "awaiting_approval" ? "text-amber-200" : attempt.successful ? "text-[#70e3d8]" : "text-red-200"}>{attempt.reason === "awaiting_approval" ? <Clock3 className="ml-1 inline h-4 w-4" /> : attempt.successful ? <CheckCircle2 className="ml-1 inline h-4 w-4" /> : <CircleAlert className="ml-1 inline h-4 w-4" />}{reasonLabel(attempt.reason)}</span></td><td className="px-5 py-4 font-bold text-xs">{attempt.displayName}</td><td className="px-5 py-4 font-mono text-xs text-[#aeb2c9]">{attempt.ipAddress}</td><td className="px-5 py-4 text-xs text-[#aeb2c9]">{new Date(attempt.createdAt).toLocaleString("ar-EG")}</td><td className="px-5 py-4 text-xs text-[#aeb2c9]">{browserLabel(attempt.userAgent)}</td><td className="px-5 py-4">{attempt.id ? <button onClick={() => void deleteAttempt(attempt.id!)} className="inline-flex items-center gap-1 rounded-lg border border-red-300/20 px-2.5 py-1.5 text-xs font-bold text-red-200 hover:bg-red-400/10"><Trash2 className="h-3.5 w-3.5" /> حذف</button> : <span className="text-xs text-[#737892]">—</span>}</td></tr>)}</tbody></table></div>}', '{activityRows.length === 0 ? <p className="p-10 text-center text-sm text-[#8f93ac]">السجل فارغ.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-right text-sm"><thead className="bg-white/[0.035] text-xs text-[#8f93ac]"><tr><th className="px-5 py-3">الحالة</th><th className="px-5 py-3">الاسم</th><th className="px-5 py-3">عنوان الشبكة</th><th className="px-5 py-3">التاريخ</th><th className="px-5 py-3">المتصفح والجهاز</th><th className="px-5 py-3">إدارة</th></tr></thead><tbody className="divide-y divide-white/[0.06]">{activityRows.map(activity => <tr key={activity.id}><td className="px-5 py-4"><span className={activityClass(activity)}>{activity.kind === "attempt" ? (activity.attempt!.reason === "awaiting_approval" ? <Clock3 className="ml-1 inline h-4 w-4" /> : activity.attempt!.successful ? <CheckCircle2 className="ml-1 inline h-4 w-4" /> : <CircleAlert className="ml-1 inline h-4 w-4" />) : sessionStatusLabel(activity.session!).icon}{activityLabel(activity)}</span></td><td className="px-5 py-4 font-bold text-xs">{activity.displayName}</td><td className="px-5 py-4 font-mono text-xs text-[#aeb2c9]">{activity.ipAddress}</td><td className="px-5 py-4 text-xs text-[#aeb2c9]">{new Date(activity.createdAt).toLocaleString("ar-EG")}</td><td className="px-5 py-4 text-xs text-[#aeb2c9]">{browserLabel(activity.userAgent)}</td><td className="px-5 py-4">{activity.kind === "attempt" && activity.attempt!.id ? <button onClick={() => void deleteAttempt(activity.attempt!.id!)} className="inline-flex items-center gap-1 rounded-lg border border-red-300/20 px-2.5 py-1.5 text-xs font-bold text-red-200 hover:bg-red-400/10"><Trash2 className="h-3.5 w-3.5" /> حذف</button> : <span className="text-xs text-[#737892]">—</span>}</td></tr>)}</tbody></table></div>}')
+p.write_text(s)

@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Cairo', sans-serif;
+  --font-display: 'Space Grotesk', 'Cairo', sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --primary: oklch(0.67 0.22 285);
+  --primary-foreground: oklch(0.98 0.01 285);
+  --radius: 0.75rem;
+  --background: oklch(0.13 0.035 275);
+  --foreground: oklch(0.97 0.01 275);
+  --card: oklch(0.17 0.04 275);
+  --card-foreground: oklch(0.97 0.01 275);
+  --popover: oklch(0.17 0.04 275);
+  --popover-foreground: oklch(0.97 0.01 275);
+  --secondary: oklch(0.2 0.04 275);
+  --secondary-foreground: oklch(0.9 0.02 275);
+  --muted: oklch(0.23 0.035 275);
+  --muted-foreground: oklch(0.7 0.03 275);
+  --accent: oklch(0.23 0.035 275);
+  --accent-foreground: oklch(0.97 0.01 275);
+  --destructive: oklch(0.66 0.22 25);
+  --destructive-foreground: oklch(0.98 0.01 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.7 0.2 285);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; background: #080b18; }
+body { margin: 0; min-width: 320px; background: #080b18; font-family: 'Cairo', sans-serif; }
+button, a, input { font-family: inherit; }
+button:active, a:active { transform: scale(0.98); }
+
+@keyframes card-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.video-card { animation: card-in 500ms cubic-bezier(.23,1,.32,1) both; }
+.font-display { font-family: 'Space Grotesk', 'Cairo', sans-serif; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
+  button:not(:disabled), a[href], select:not(:disabled) { @apply cursor-pointer; }
+}
+
+@layer components {
+  .container { width: 100%; margin-inline: auto; padding-inline: 1rem; }
+  @media (min-width: 640px) { .container { padding-inline: 1.5rem; } }
+  @media (min-width: 1024px) { .container { max-width: 1280px; padding-inline: 2rem; } }
+}

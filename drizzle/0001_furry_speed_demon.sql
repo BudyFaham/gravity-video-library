@@ -1,0 +1,1 @@
+ALTER TABLE `login_attempts` ADD `displayName` varchar(128) NOT NULL;
